@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>何食べるAI v6 | 自分のバグ + VPC版</title>
+  <meta name="description" content="自分のバグとVPCから構想した、食事決定の迷いを30秒で終わらせる何食べるAI v6。">
+  <style>
+    :root{--coral:#ed5d5d;--orange:#ff8a48;--ink:#211d1a;--muted:#6d625c;--paper:#fffdf8;--line:#eadfd8;--green:#127d68;--blue:#315fc8;--plum:#7446a7;--shadow:0 18px 44px rgba(62,40,28,.14)}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(rgba(255,250,245,.92),rgba(255,250,245,.96)),url("https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1600&q=80") center/cover fixed}
+    button,input,textarea,select{font:inherit}button{cursor:pointer}.shell{width:min(1180px,100%);margin:0 auto;padding:18px}.grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:16px;align-items:start}
+    .panel,.card,.hero,.box{background:rgba(255,253,248,.96);border:1px solid rgba(234,223,216,.95);border-radius:8px;box-shadow:var(--shadow)}.panel{padding:18px;position:sticky;top:12px}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:14px}.mark{width:52px;height:52px;display:grid;place-items:center;border-radius:8px;color:#fff;background:linear-gradient(135deg,var(--coral),var(--orange));font-size:28px;box-shadow:0 10px 24px rgba(237,93,93,.26)}
+    h1,h2,h3,p{margin:0}h1{font-size:25px;line-height:1.15;letter-spacing:0}h2{font-size:28px;line-height:1.2;letter-spacing:0}.sub{margin-top:5px;color:var(--muted);font-size:13px;line-height:1.65}
+    .bug{border:1px solid rgba(237,93,93,.28);background:#fff0eb;border-radius:8px;padding:12px;margin:12px 0}.bug b{color:#b33333}
+    .section{margin:15px 0 8px;color:var(--muted);font-size:13px;font-weight:900}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:#fff;border-radius:8px;min-height:40px;padding:8px 11px;font-size:13px;font-weight:900;color:var(--ink)}.chip.active{border-color:var(--coral);background:#fff0eb;color:#b33333}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}select,textarea,input{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);outline:none}select,input{min-height:42px;padding:0 10px;font-weight:800}textarea{min-height:76px;resize:vertical;padding:11px;line-height:1.55}
+    .slider{display:grid;gap:6px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px}.slider label{display:flex;justify-content:space-between;gap:8px;font-weight:900;font-size:13px;color:var(--muted)}input[type=range]{height:8px;accent-color:var(--coral)}
+    .primary{width:100%;min-height:52px;margin-top:15px;border:0;border-radius:8px;color:#fff;background:linear-gradient(135deg,var(--coral),var(--orange));font-weight:900;box-shadow:0 12px 28px rgba(237,93,93,.28)}.ghost{border:1px solid var(--line);background:#fff;border-radius:8px;min-height:40px;padding:0 12px;font-weight:900;color:var(--ink)}
+    .hero{min-height:205px;padding:22px;color:#fff;background:linear-gradient(90deg,rgba(33,29,26,.78),rgba(33,29,26,.22)),url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80") center/cover;display:flex;flex-direction:column;justify-content:flex-end}.hero p{margin-top:8px;color:rgba(255,255,255,.9);max-width:760px;line-height:1.7;font-size:14px}
+    .decision{margin-top:14px;padding:18px;border-radius:8px;border:1px solid rgba(18,125,104,.25);background:#eef8f5;display:grid;gap:8px}.decision strong{font-size:24px;line-height:1.25}.timer{display:inline-flex;align-items:center;gap:8px;color:var(--green);font-weight:900;font-size:13px}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.card{padding:16px;min-height:245px;display:flex;flex-direction:column;gap:10px}.badge{align-self:flex-start;border-radius:8px;padding:5px 9px;color:#fff;font-size:12px;font-weight:900}.main{background:var(--coral)}.backup{background:var(--green)}.stop{background:var(--plum)}
+    .food{font-size:20px;line-height:1.28}.reason{color:var(--muted);font-size:13px;line-height:1.65;flex:1}.meta{display:grid;gap:6px;font-size:12px;color:var(--muted)}.meta span{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #f0e6df;padding-top:6px}.meta em{font-style:normal}
+    .quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.box{margin-top:14px;padding:16px}.box h3{font-size:18px;margin-bottom:8px}.vpc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.vpc div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}.vpc b{display:block;margin-bottom:5px}.vpc ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.7}.log{display:grid;gap:8px;margin-top:8px}.log div{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #f0e6df;padding-top:8px;font-size:13px;color:var(--muted)}.log b{color:var(--ink)}
+    @media(max-width:920px){.grid{grid-template-columns:1fr}.panel{position:static}.cards,.vpc{grid-template-columns:1fr}}@media(max-width:460px){.shell{padding:12px}h1{font-size:23px}h2{font-size:24px}.row{grid-template-columns:1fr}.ghost{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="shell"><div class="grid">
+    <aside class="panel">
+      <div class="brand"><div class="mark">🧩</div><div><h1>何食べるAI v6</h1><p class="sub">自分のバグ + VPCから作った30秒決定版。</p></div></div>
+      <div class="bug"><b>自分のバグ:</b><p class="sub">疲れているほど選択肢を増やしてしまい、食べるものを決めるだけで消耗する。</p></div>
+      <div class="section">🚦 今の負荷</div>
+      <div class="slider"><label>疲れ <span id="fatigueLabel">3</span></label><input id="fatigue" type="range" min="1" max="5" value="3"></div>
+      <div class="section">🏢 場面</div>
+      <div class="chips" data-group="scene"><button class="chip active" data-value="solo">一人</button><button class="chip" data-value="work">仕事中</button><button class="chip" data-value="friends">友だちと</button><button class="chip" data-value="late">夜遅い</button></div>
+      <div class="section">🧭 欲しい感じ</div>
+      <div class="chips" data-group="mood"><button class="chip active" data-value="balanced">おまかせ</button><button class="chip" data-value="warm">温かい</button><button class="chip" data-value="light">軽い</button><button class="chip" data-value="power">がっつり</button></div>
+      <div class="section">⚙️ 条件</div>
+      <div class="row"><select id="budget"><option value="normal">予算: ふつう</option><option value="save">予算: 安め</option><option value="treat">予算: ご褒美</option></select><select id="method"><option value="any">方法: なんでも</option><option value="conveni">コンビニ</option><option value="restaurant">外食</option><option value="delivery">デリバリー</option></select></div>
+      <div class="section">📝 避けたいもの</div><textarea id="notes" placeholder="例: 辛いの苦手、胃が重い、アルコールなし"></textarea>
+      <button class="primary" id="decide">30秒で決める</button>
+    </aside>
+    <section>
+      <div class="hero"><h2>選ぶAIではなく、決め疲れを止めるAIへ。</h2><p>v6はVPCから「選択肢が欲しい」のではなく「納得して早く決めたい」という価値に寄せました。疲れが高いほど候補を絞り、迷う時間を短くします。</p></div>
+      <div class="decision"><span class="timer">⏱ 30秒決定モード</span><p>今日の結論</p><strong id="finalPick">-</strong><p class="sub" id="why">条件を入れると、決める理由まで出します。</p></div>
+      <div class="cards" id="results"></div>
+      <div class="quick"><button class="ghost" id="lighter">もっと軽く</button><button class="ghost" id="cheaper">もっと安く</button><button class="ghost" id="copy">提出メモをコピー</button></div>
+      <section class="box"><h3>VPCからの設計</h3><div class="vpc">
+        <div><b>Customer Jobs</b><ul><li>今日食べるものを早く決めたい</li><li>失敗しない選択をしたい</li></ul></div>
+        <div><b>Pains</b><ul><li>疲れていると考えるのが面倒</li><li>選択肢が多いほど迷う</li></ul></div>
+        <div><b>Gains</b><ul><li>30秒で納得して決まる</li><li>状況に合う理由がある</li></ul></div>
+        <div><b>Value Proposition</b><ul><li>疲れに応じて候補数と重さを調整</li><li>結論を先に出す</li></ul></div>
+      </div></section>
+      <section class="box"><h3>最近の決定</h3><div class="log" id="log"></div></section>
+    </section>
+  </div></main>
+  <script>
+    const foods=[
+      {name:"鶏だし春雨スープ + 鮭おにぎり",mood:["warm","light","balanced"],scene:["solo","work","late"],budget:"save",method:"conveni",time:"5分",load:1,note:"疲れていても温かく、胃に重くなりにくい。",avoid:[]},
+      {name:"和風おろしハンバーグ定食",mood:["balanced"],scene:["solo","friends"],budget:"normal",method:"restaurant",time:"12分",load:3,note:"満足感と軽さのバランスが良い。",avoid:[]},
+      {name:"スープセット + トースト",mood:["warm","light"],scene:["work","late"],budget:"save",method:"restaurant",time:"7分",load:1,note:"考えずに食べられて休憩にもなる。",avoid:[]},
+      {name:"焼き鳥盛り合わせ + たたききゅうり",mood:["balanced"],scene:["friends"],budget:"normal",method:"restaurant",time:"8分",load:2,note:"場を始めやすく、シェアしやすい。",avoid:["noalcohol"]},
+      {name:"カルビ丼 + チョレギサラダ",mood:["power"],scene:["solo","work"],budget:"normal",method:"delivery",time:"15分",load:4,note:"腹ぺこの時に迷いを断ち切れる。",avoid:["heavy"]},
+      {name:"醤油ラーメン + 半餃子",mood:["warm","power"],scene:["solo","late"],budget:"save",method:"restaurant",time:"8分",load:4,note:"温かくて満足感が強い。",avoid:["heavy"]},
+      {name:"クラブハウスサンド + アイスコーヒー",mood:["balanced","light"],scene:["work","solo"],budget:"normal",method:"restaurant",time:"7分",load:2,note:"食事と休憩を両立できる。",avoid:[]},
+      {name:"刺身定食 + 味噌汁",mood:["light","balanced"],scene:["solo"],budget:"treat",method:"restaurant",time:"12分",load:2,note:"さっぱりしつつご褒美感がある。",avoid:[]}
+    ];
+    const state={scene:"solo",mood:"balanced",force:""};const $=id=>document.getElementById(id);const store=()=>JSON.parse(localStorage.getItem("naniV6")||'{"history":[]}');const put=d=>localStorage.setItem("naniV6",JSON.stringify(d));let current=[];
+    function setGroup(g,v){state[g]=v;document.querySelectorAll(`[data-group="${g}"] .chip`).forEach(c=>c.classList.toggle("active",c.dataset.value===v))}
+    document.querySelectorAll("[data-group] .chip").forEach(c=>c.addEventListener("click",()=>{setGroup(c.parentElement.dataset.group,c.dataset.value)}));
+    $("fatigue").addEventListener("input",()=>{$("fatigueLabel").textContent=$("fatigue").value});
+    function score(f){let s=0,t=$("notes").value,fat=Number($("fatigue").value);if(f.scene.includes(state.scene))s+=5;if(f.mood.includes(state.mood))s+=4;if(f.budget===$("budget").value)s+=2;if($("method").value==="any"||f.method===$("method").value)s+=3;if(state.force==="lighter"&&f.load<=2)s+=5;if(state.force==="cheaper"&&f.budget==="save")s+=5;if(f.load<=Math.max(1,6-fat))s+=5;if(t.includes("胃")&&f.avoid.includes("heavy"))s-=9;if(t.includes("アルコールなし")&&f.avoid.includes("noalcohol"))s-=9;return s+Math.random()}
+    function pick(){current=foods.slice().sort((a,b)=>score(b)-score(a)).slice(0,3);render();let d=store();d.history.unshift({date:new Date().toLocaleString("ja-JP"),pick:current[0].name});d.history=d.history.slice(0,5);put(d);log()}
+    function render(){const labels=[["main","結論"],["backup","代替"],["stop","迷った時の停止案"]];$("results").innerHTML=current.map((f,i)=>`<article class="card"><span class="badge ${labels[i][0]}">${labels[i][1]}</span><h3 class="food">${f.name}</h3><p class="reason">${f.note}</p><div class="meta"><span><b>方法</b><em>${f.method==="conveni"?"コンビニ":f.method==="restaurant"?"外食":"デリバリー"}</em></span><span><b>予算</b><em>${f.budget==="save"?"安め":f.budget==="treat"?"ご褒美":"ふつう"}</em></span><span><b>目安</b><em>${f.time}</em></span></div></article>`).join("");$("finalPick").textContent=current[0].name;$("why").textContent=`疲れ${$("fatigue").value}・${state.scene}・${state.mood}に合わせて、迷いが増えにくい候補を先頭にしました。`}
+    function log(){const d=store();$("log").innerHTML=d.history.map(x=>`<div><b>${x.pick}</b><span>${x.date}</span></div>`).join("")}
+    $("decide").addEventListener("click",pick);$("lighter").addEventListener("click",()=>{state.force="lighter";setGroup("mood","light");pick()});$("cheaper").addEventListener("click",()=>{state.force="cheaper";$("budget").value="save";pick()});
+    $("copy").addEventListener("click",async()=>{const memo=`プロジェクト名: 何食べるAI v6\nプロダクト v6 のURL: ${location.href}\n自分のバグ: 疲れているほど選択肢を増やしてしまい、食べるものを決めるだけで消耗する\nVPCからの価値提案: 候補を増やすのではなく、疲れに応じて結論を先に出し30秒で決める\nv5 → v6 で変えたこと: 前回条件の再利用から、決め疲れそのものを止める30秒決定モードに進化`;try{await navigator.clipboard.writeText(memo);$("copy").textContent="提出メモをコピー済み"}catch{alert(memo)}});
+    pick();
+  </script>
+</body>
+</html>
